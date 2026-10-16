@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Hexagon, Mail, MapPin, Phone } from "lucide-react";
-import { navLinks, services, site } from "@/data/site";
+import { navLinks, services } from "@/data/site";
+import { getSiteSettings } from "@/lib/content";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -26,7 +27,8 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-export default function Footer() {
+export default async function Footer() {
+  const settings = await getSiteSettings();
   return (
     <footer className="border-t border-line bg-surface/40">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -39,15 +41,15 @@ export default function Footer() {
                 <span className="absolute text-xs font-black text-brand-2">V</span>
               </span>
               <span className="text-lg font-extrabold tracking-wider">
-                {site.name}
+                {settings.name}
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              {site.description}
+              {settings.description}
             </p>
             <div className="mt-6 flex gap-3">
               <a
-                href={site.socials.github}
+                href={settings.socials.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
@@ -56,7 +58,7 @@ export default function Footer() {
                 <GithubIcon className="h-4 w-4" />
               </a>
               <a
-                href={site.socials.linkedin}
+                href={settings.socials.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
@@ -65,7 +67,7 @@ export default function Footer() {
                 <LinkedinIcon className="h-4 w-4" />
               </a>
               <a
-                href={site.socials.twitter}
+                href={settings.socials.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="X (Twitter)"
@@ -122,19 +124,19 @@ export default function Footer() {
             <ul className="mt-4 space-y-3 text-sm text-muted">
               <li className="flex items-center gap-3">
                 <Mail className="h-4 w-4 shrink-0 text-brand-2" />
-                <a href={`mailto:${site.email}`} className="hover:text-foreground">
-                  {site.email}
+                <a href={`mailto:${settings.email}`} className="hover:text-foreground">
+                  {settings.email}
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0 text-brand-2" />
-                <a href={`tel:${site.phone.replace(/\s/g, "")}`} className="hover:text-foreground">
-                  {site.phone}
+                <a href={`tel:${settings.phone.replace(/\s/g, "")}`} className="hover:text-foreground">
+                  {settings.phone}
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 shrink-0 text-brand-2" />
-                {site.address}
+                {settings.address}
               </li>
             </ul>
           </div>
@@ -142,7 +144,7 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-line pt-8 sm:flex-row">
           <p className="text-xs text-muted">
-            © {new Date().getFullYear()} {site.name}. All rights reserved.
+            © {new Date().getFullYear()} {settings.name}. All rights reserved.
           </p>
           <p className="text-xs text-muted">
             Built with Next.js, TypeScript & Tailwind CSS

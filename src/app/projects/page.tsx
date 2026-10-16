@@ -3,14 +3,16 @@ import { ArrowUpRight } from "lucide-react";
 import Reveal from "@/components/Reveal";
 import SectionHeading from "@/components/SectionHeading";
 import CTA from "@/components/CTA";
-import { projects, site } from "@/data/site";
+import { site } from "@/data/site";
+import { getProjects } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Projects",
   description: `Explore ${site.name}'s portfolio — fintech, healthtech, logistics, edtech, e-commerce and IoT platforms.`,
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const liveProjects = await getProjects();
   return (
     <>
       {/* Hero */}
@@ -36,7 +38,7 @@ export default function ProjectsPage() {
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project, i) => (
+            {liveProjects.map((project, i) => (
               <Reveal key={project.title} delay={(i % 3) * 0.08}>
                 <article className="card group h-full overflow-hidden">
                   <div

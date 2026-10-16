@@ -9,12 +9,13 @@ import {
   site,
   stats,
   services,
-  projects,
   marqueeTech,
   testimonials,
 } from "@/data/site";
+import { getProjects } from "@/lib/content";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const liveProjects = await getProjects();
   return (
     <>
       {/* ── Hero ─────────────────────────────────────────────── */}
@@ -126,7 +127,7 @@ export default function HomePage() {
             description="A snapshot of platforms we've designed, engineered and shipped for clients across industries."
           />
           <div className="grid gap-6 md:grid-cols-3">
-            {projects.slice(0, 3).map((project, i) => (
+            {liveProjects.slice(0, 3).map((project, i) => (
               <Reveal key={project.title} delay={i * 0.1}>
                 <div className="card h-full overflow-hidden">
                   <div

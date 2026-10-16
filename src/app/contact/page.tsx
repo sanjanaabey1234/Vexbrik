@@ -3,6 +3,7 @@ import { Mail, MapPin, Phone, Clock } from "lucide-react";
 import Reveal from "@/components/Reveal";
 import ContactForm from "@/components/ContactForm";
 import { site } from "@/data/site";
+import { getSiteSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -33,8 +34,16 @@ const contactItems = [
     value: "Mon – Fri, 9:00 AM – 6:00 PM",
   },
 ];
+void contactItems;
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings();
+  const liveContactItems = [
+    { icon: Mail, label: "Email Us", value: settings.email, href: `mailto:${settings.email}` },
+    { icon: Phone, label: "Call Us", value: settings.phone, href: `tel:${settings.phone.replace(/\s/g, "")}` },
+    { icon: MapPin, label: "Visit Us", value: settings.address },
+    { icon: Clock, label: "Working Hours", value: settings.workingHours },
+  ];
   return (
     <>
       {/* Hero */}
@@ -64,7 +73,7 @@ export default function ContactPage() {
           </Reveal>
 
           <Reveal delay={0.1} className="flex flex-col gap-4">
-            {contactItems.map((item) => (
+            {liveContactItems.map((item) => (
               <div key={item.label} className="card flex items-start gap-4 p-6">
                 <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/15 text-brand-2">
                   <item.icon className="h-5 w-5" aria-hidden />

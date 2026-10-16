@@ -18,10 +18,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
@@ -49,6 +45,7 @@ export default function Navbar() {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  onClick={() => setOpen(false)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                     active
                       ? "bg-surface-2 text-foreground"
@@ -89,6 +86,7 @@ export default function Navbar() {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  onClick={() => setOpen(false)}
                   className={`block rounded-lg px-4 py-3 text-sm font-medium ${
                     pathname === link.href
                       ? "bg-surface-2 text-foreground"
@@ -102,6 +100,7 @@ export default function Navbar() {
           </ul>
           <Link
             href="/contact"
+            onClick={() => setOpen(false)}
             className="mt-4 block rounded-full bg-brand px-5 py-3 text-center text-sm font-semibold text-white"
           >
             Start a Project
