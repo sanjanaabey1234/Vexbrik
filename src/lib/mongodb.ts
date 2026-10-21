@@ -11,5 +11,12 @@ export default function getMongoClient() {
   if (process.env.NODE_ENV !== "production") {
     globalForMongo.mongoClient = clientPromise;
   }
-  return clientPromise;
+  return clientPromise.catch((error) => {
+    // Do not retain a failed DNS/network connection during development.
+    // A later request can retry after the network configuration is corrected.
+    if (globalForMongo.mongoClient === clientPromise) {
+      delete globalForMongo.mongoClient;
+    }
+    throw error;
+  });
 }

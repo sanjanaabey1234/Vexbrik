@@ -19,9 +19,18 @@ function sign(value: string) {
 
 function validSession(value?: string) {
   if (!value) return false;
-  const [email, expiry, signature] = value.split(".");
-  if (!email || !expiry || !signature || Number(expiry) < Date.now()) return false;
-  const expected = sign(`${email}.${expiry}`);
+  const [payload, signature] = value.split(".");
+  if (!payload || !signature) return false;
+
+  let session: { email?: string; expiry?: number };
+  try {
+    session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return false;
+  }
+
+  if (!session.email || !session.expiry || session.expiry < Date.now()) return false;
+  const expected = sign(payload);
   if (expected.length !== signature.length) return false;
   return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 }
@@ -36,7 +45,8 @@ export async function requireAdmin() {
 
 export async function createSession(email: string) {
   const expiry = Date.now() + MAX_AGE_SECONDS * 1000;
-  const value = `${email}.${expiry}.${sign(`${email}.${expiry}`)}`;
+  const payload = Buffer.from(JSON.stringify({ email, expiry })).toString("base64url");
+  const value = `${payload}.${sign(payload)}`;
   (await cookies()).set(SESSION_COOKIE, value, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -56,7 +66,7 @@ export function credentialsMatch(email: string, password: string) {
   if (!expectedEmail || !expectedPassword) return false;
   return (
     email.trim().toLowerCase() === expectedEmail.trim().toLowerCase() &&
-    password.length === expectedPassword.length &&
-    timingSafeEqual(Buffer.from(password), Buffer.from(expectedPassword))
+    password.trim().length === expectedPassword.trim().length &&
+    timingSafeEqual(Buffer.from(password.trim()), Buffer.from(expectedPassword.trim()))
   );
 }
