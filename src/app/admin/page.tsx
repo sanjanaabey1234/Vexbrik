@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Building2, ChevronRight, FolderKanban, Inbox, LayoutDashboard, LogOut, Plus } from "lucide-react";
+import { Building2, ChevronRight, ExternalLink, FolderKanban, Inbox, LayoutDashboard, LogOut, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { getContactSubmissions, getProjects, getSiteSettings } from "@/lib/content";
 import { deleteProject, logout, saveProject, saveSettings } from "./actions";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const input = "mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-sm outline-none focus:border-brand";
 const gradients = ["from-indigo-500 to-cyan-400", "from-emerald-500 to-teal-400", "from-orange-500 to-amber-400", "from-violet-500 to-fuchsia-400", "from-sky-500 to-blue-400", "from-lime-500 to-green-400"];
@@ -25,7 +26,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
       <nav className="mt-8 flex gap-2 overflow-x-auto lg:flex-col">{tabs.map((item) => { const Icon = item.icon; const active = tab === item.id; return <Link key={item.id} href={`/admin?tab=${item.id}`} className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${active ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-muted hover:bg-surface-2 hover:text-foreground"}`}><Icon className="h-4 w-4" />{item.label}{active && <ChevronRight className="ml-auto h-4 w-4" />}</Link>; })}</nav>
       <div className="mt-8 hidden border-t border-line pt-5 lg:block"><Link href="/" className="text-sm text-muted hover:text-foreground">View public website ↗</Link></div>
     </aside>
-    <section className="min-w-0 p-5 sm:p-8 lg:p-10"><header className="mb-8 flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-2">VEXBRIK CMS</p><h1 className="mt-2 text-2xl font-bold sm:text-3xl">{tabs.find((item) => item.id === tab)?.label}</h1></div><form action={logout}><button className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold hover:border-brand"><LogOut className="h-4 w-4" />Sign out</button></form></header>
+    <section className="min-w-0 p-5 sm:p-8 lg:p-10"><header className="mb-8 flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-2">VEXBRIK CMS</p><h1 className="mt-2 text-2xl font-bold sm:text-3xl">{tabs.find((item) => item.id === tab)?.label}</h1></div><div className="flex items-center gap-2"><ThemeToggle compact /><Link href="/" className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold hover:border-brand"><ExternalLink className="h-4 w-4" /><span className="hidden sm:inline">View website</span></Link><form action={logout}><button className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold hover:border-brand"><LogOut className="h-4 w-4" /><span className="hidden sm:inline">Sign out</span></button></form></div></header>
       {params.saved && <Notice text="Changes saved successfully." />}{params.deleted && <Notice text="Project deleted." />}{tab === "company" && <CompanyTab settings={settings} />}{tab === "projects" && <ProjectsTab projects={projects} />}{tab === "messages" && <MessagesTab messages={messages} />}
     </section>
   </div>;

@@ -12,6 +12,15 @@
   --border: rgba(148, 163, 216, 0.14);
 }
 
+[data-theme="light"] {
+  --background: #f7f8ff;
+  --surface: #ffffff;
+  --surface-2: #eef0ff;
+  --foreground: #15182e;
+  --muted: #5f6685;
+  --border: rgba(53, 61, 111, 0.16);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
@@ -70,6 +79,14 @@ body {
   border-radius: 1rem;
   transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+[data-theme="light"] .card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(242, 244, 255, 0.9));
+}
+
+.light-icon { display: none; }
+[data-theme="light"] .dark-icon { display: none; }
+[data-theme="light"] .light-icon { display: block; }
 
 .card:hover {
   border-color: rgba(129, 140, 248, 0.45);

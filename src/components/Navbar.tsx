@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Hexagon } from "lucide-react";
 import { navLinks, site } from "@/data/site";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -59,12 +60,10 @@ export default function Navbar() {
           })}
         </ul>
 
-        <Link
-          href="/contact"
-          className="hidden rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-indigo-400 md:inline-flex"
-        >
-          Start a Project
-        </Link>
+        <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle compact />
+          <Link href="/contact" className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-brand/30 transition hover:bg-indigo-400">Start a Project</Link>
+        </div>
 
         {/* Mobile toggle */}
         <button
@@ -105,6 +104,7 @@ export default function Navbar() {
           >
             Start a Project
           </Link>
+          <div className="mt-4 px-1"><ThemeToggle /></div>
         </div>
       )}
     </header>
