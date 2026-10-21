@@ -1,61 +1,43 @@
+import Link from "next/link";
+import { Building2, ChevronRight, FolderKanban, Inbox, LayoutDashboard, LogOut, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
-import { getProjects, getSiteSettings } from "@/lib/content";
+import { getContactSubmissions, getProjects, getSiteSettings } from "@/lib/content";
 import { deleteProject, logout, saveProject, saveSettings } from "./actions";
 
 const input = "mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-sm outline-none focus:border-brand";
 const gradients = ["from-indigo-500 to-cyan-400", "from-emerald-500 to-teal-400", "from-orange-500 to-amber-400", "from-violet-500 to-fuchsia-400", "from-sky-500 to-blue-400", "from-lime-500 to-green-400"];
+type Tab = "company" | "projects" | "messages";
+const tabs: { id: Tab; label: string; icon: typeof Building2 }[] = [
+  { id: "company", label: "Company details", icon: Building2 },
+  { id: "projects", label: "Projects", icon: FolderKanban },
+  { id: "messages", label: "Contact messages", icon: Inbox },
+];
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ tab?: string; saved?: string; deleted?: string }> }) {
   if (!(await isAdmin())) redirect("/admin/login");
-  const [settings, projects] = await Promise.all([getSiteSettings(), getProjects()]);
-  return (
-    <main className="mx-auto max-w-6xl px-4 py-28 sm:px-6">
-      <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
-        <div><p className="text-sm font-semibold uppercase tracking-widest text-brand-2">Content management</p><h1 className="mt-2 text-3xl font-bold">Website admin</h1></div>
-        <form action={logout}><button className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-brand">Sign out</button></form>
-      </div>
-
-      <section className="card p-6 sm:p-8">
-        <h2 className="text-xl font-bold">Contact & company details</h2>
-        <p className="mt-1 text-sm text-muted">These details appear on the contact page and footer.</p>
-        <form action={saveSettings} className="mt-6 grid gap-5 sm:grid-cols-2">
-          <label className="text-sm font-medium">Company name<input name="name" defaultValue={settings.name} className={input} /></label>
-          <label className="text-sm font-medium">Email<input required type="email" name="email" defaultValue={settings.email} className={input} /></label>
-          <label className="text-sm font-medium">Phone<input required name="phone" defaultValue={settings.phone} className={input} /></label>
-          <label className="text-sm font-medium">Address<input required name="address" defaultValue={settings.address} className={input} /></label>
-          <label className="text-sm font-medium sm:col-span-2">Working hours<input name="workingHours" defaultValue={settings.workingHours} className={input} /></label>
-          <label className="text-sm font-medium sm:col-span-2">Company description<textarea name="description" defaultValue={settings.description} rows={3} className={input} /></label>
-          <label className="text-sm font-medium">GitHub URL<input name="github" defaultValue={settings.socials.github} className={input} /></label>
-          <label className="text-sm font-medium">LinkedIn URL<input name="linkedin" defaultValue={settings.socials.linkedin} className={input} /></label>
-          <label className="text-sm font-medium sm:col-span-2">X / Twitter URL<input name="twitter" defaultValue={settings.socials.twitter} className={input} /></label>
-          <div className="sm:col-span-2"><button className="rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-400">Save contact details</button></div>
-        </form>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-xl font-bold">Projects</h2><p className="mt-1 text-sm text-muted">Edit existing work or add a new portfolio card.</p>
-        <div className="mt-6 space-y-6">
-          {projects.map((project) => <ProjectForm key={project.id} project={project} />)}
-          <ProjectForm />
-        </div>
-      </section>
-    </main>
-  );
+  const params = await searchParams;
+  const tab = tabs.some((item) => item.id === params.tab) ? (params.tab as Tab) : "company";
+  const [settings, projects, messages] = await Promise.all([getSiteSettings(), getProjects(), getContactSubmissions()]);
+  return <div className="min-h-screen bg-background lg:grid lg:grid-cols-[260px_1fr]">
+    <aside className="border-b border-line bg-surface/60 p-5 lg:min-h-screen lg:border-b-0 lg:border-r">
+      <Link href="/admin" className="flex items-center gap-3 px-3 py-2"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/15 text-brand-2"><LayoutDashboard className="h-5 w-5" /></span><span><span className="block text-sm font-bold">VEXBRIK</span><span className="block text-xs text-muted">Admin panel</span></span></Link>
+      <nav className="mt-8 flex gap-2 overflow-x-auto lg:flex-col">{tabs.map((item) => { const Icon = item.icon; const active = tab === item.id; return <Link key={item.id} href={`/admin?tab=${item.id}`} className={`flex shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${active ? "bg-brand text-white shadow-lg shadow-brand/20" : "text-muted hover:bg-surface-2 hover:text-foreground"}`}><Icon className="h-4 w-4" />{item.label}{active && <ChevronRight className="ml-auto h-4 w-4" />}</Link>; })}</nav>
+      <div className="mt-8 hidden border-t border-line pt-5 lg:block"><Link href="/" className="text-sm text-muted hover:text-foreground">View public website ↗</Link></div>
+    </aside>
+    <section className="min-w-0 p-5 sm:p-8 lg:p-10"><header className="mb-8 flex items-center justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-2">VEXBRIK CMS</p><h1 className="mt-2 text-2xl font-bold sm:text-3xl">{tabs.find((item) => item.id === tab)?.label}</h1></div><form action={logout}><button className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-sm font-semibold hover:border-brand"><LogOut className="h-4 w-4" />Sign out</button></form></header>
+      {params.saved && <Notice text="Changes saved successfully." />}{params.deleted && <Notice text="Project deleted." />}{tab === "company" && <CompanyTab settings={settings} />}{tab === "projects" && <ProjectsTab projects={projects} />}{tab === "messages" && <MessagesTab messages={messages} />}
+    </section>
+  </div>;
 }
 
-function ProjectForm({ project }: { project?: Awaited<ReturnType<typeof getProjects>>[number] }) {
-  const isNew = !project;
-  return <article className="card p-6 sm:p-8"><h3 className="text-lg font-bold">{isNew ? "Add project" : project.title}</h3>
-    <form action={saveProject} className="mt-5 grid gap-4 sm:grid-cols-2">
-      <input type="hidden" name="id" defaultValue={project?.id} />
-      <label className="text-sm font-medium">Title<input required name="title" defaultValue={project?.title} className={input} /></label>
-      <label className="text-sm font-medium">Category<input required name="category" defaultValue={project?.category} className={input} /></label>
-      <label className="text-sm font-medium sm:col-span-2">Description<textarea required name="description" rows={3} defaultValue={project?.description} className={input} /></label>
-      <label className="text-sm font-medium">Technologies <span className="text-muted">(comma separated)</span><input required name="tech" defaultValue={project?.tech.join(", ")} className={input} /></label>
-      <label className="text-sm font-medium">Colour style<select name="gradient" defaultValue={project?.gradient || gradients[0]} className={input}>{gradients.map((gradient) => <option key={gradient} value={gradient}>{gradient.replace("from-", "").replace(" to-", " → ")}</option>)}</select></label>
-      <div className="flex flex-wrap gap-3 sm:col-span-2"><button className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400">{isNew ? "Add project" : "Save project"}</button>
-      {!isNew && <button formAction={deleteProject} className="rounded-full border border-red-400/40 px-5 py-2.5 text-sm font-semibold text-red-200 hover:bg-red-400/10">Delete</button>}</div>
-    </form>
-  </article>;
-}
+function Notice({ text }: { text: string }) { return <p className="mb-6 rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-sm text-brand-2">{text}</p>; }
+function Field({ label, name, value, type = "text", wide = false }: { label: string; name: string; value: string; type?: string; wide?: boolean }) { return <label className={`text-sm font-medium ${wide ? "sm:col-span-2" : ""}`}>{label}<input name={name} type={type} required={name !== "name"} defaultValue={value} className={input} /></label>; }
+
+function CompanyTab({ settings }: { settings: Awaited<ReturnType<typeof getSiteSettings>> }) { return <section className="card max-w-5xl p-6 sm:p-8"><h2 className="text-xl font-bold">Public company information</h2><p className="mt-1 text-sm text-muted">Shown on the contact page and website footer.</p><form action={saveSettings} className="mt-6 grid gap-5 sm:grid-cols-2"><Field label="Company name" name="name" value={settings.name} /><Field label="Email" name="email" type="email" value={settings.email} /><Field label="Phone" name="phone" value={settings.phone} /><Field label="Address" name="address" value={settings.address} /><Field label="Working hours" name="workingHours" value={settings.workingHours} wide /><label className="text-sm font-medium sm:col-span-2">Company description<textarea name="description" defaultValue={settings.description} rows={4} className={input} /></label><Field label="GitHub URL" name="github" value={settings.socials.github} /><Field label="LinkedIn URL" name="linkedin" value={settings.socials.linkedin} /><Field label="X / Twitter URL" name="twitter" value={settings.socials.twitter} wide /><div className="sm:col-span-2"><button className="rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-indigo-400">Save company details</button></div></form></section>; }
+
+function ProjectsTab({ projects }: { projects: Awaited<ReturnType<typeof getProjects>> }) { return <div className="max-w-5xl space-y-6"><div className="flex items-center justify-between"><p className="text-sm text-muted">Manage portfolio cards displayed on the public website.</p><span className="rounded-full bg-surface-2 px-3 py-1 text-xs text-muted">{projects.length} projects</span></div>{projects.map((project) => <ProjectForm key={project.id} project={project} />)}<ProjectForm /></div>; }
+
+function ProjectForm({ project }: { project?: Awaited<ReturnType<typeof getProjects>>[number] }) { const isNew = !project; return <article className="card p-6"><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand/15 text-brand-2">{isNew ? <Plus className="h-4 w-4" /> : <FolderKanban className="h-4 w-4" />}</span><div><h2 className="font-bold">{isNew ? "Add a project" : project.title}</h2><p className="text-xs text-muted">{isNew ? "Create a new public portfolio card." : "Update or remove this project."}</p></div></div><form action={saveProject} className="mt-6 grid gap-4 sm:grid-cols-2"><input type="hidden" name="id" defaultValue={project?.id} /><Field label="Title" name="title" value={project?.title || ""} /><Field label="Category" name="category" value={project?.category || ""} /><label className="text-sm font-medium sm:col-span-2">Description<textarea required name="description" rows={3} defaultValue={project?.description} className={input} /></label><Field label="Technologies (comma separated)" name="tech" value={project?.tech.join(", ") || ""} /><label className="text-sm font-medium">Colour style<select name="gradient" defaultValue={project?.gradient || gradients[0]} className={input}>{gradients.map((gradient) => <option key={gradient} value={gradient}>{gradient.replace("from-", "").replace(" to-", " → ")}</option>)}</select></label><div className="flex flex-wrap gap-3 sm:col-span-2"><button className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400">{isNew ? "Add project" : "Save changes"}</button>{!isNew && <button formAction={deleteProject} className="rounded-full border border-red-400/40 px-5 py-2.5 text-sm font-semibold text-red-200 hover:bg-red-400/10">Delete</button>}</div></form></article>; }
+
+function MessagesTab({ messages }: { messages: Awaited<ReturnType<typeof getContactSubmissions>> }) { if (!messages.length) return <section className="card max-w-5xl p-10 text-center"><Inbox className="mx-auto h-10 w-10 text-brand-2" /><h2 className="mt-4 text-xl font-bold">No contact messages yet</h2><p className="mt-2 text-sm text-muted">New submissions from the public contact form will appear here.</p></section>; return <div className="max-w-5xl space-y-4">{messages.map((message) => <article key={message.id} className="card p-6"><div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-bold">{message.name}</h2><a className="text-sm text-brand-2 hover:underline" href={`mailto:${message.email}`}>{message.email}</a></div><time className="text-xs text-muted">{message.createdAt.toLocaleString()}</time></div><div className="mt-4 flex flex-wrap gap-2 text-xs">{message.company && <span className="rounded-full bg-surface-2 px-3 py-1 text-muted">{message.company}</span>}{message.budget && <span className="rounded-full bg-surface-2 px-3 py-1 text-muted">Budget: {message.budget}</span>}</div><p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-muted">{message.message}</p></article>)}</div>; }

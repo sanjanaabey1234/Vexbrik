@@ -12,6 +12,10 @@ function refreshSite() {
   ["/", "/projects", "/contact", "/admin"].forEach((path) => revalidatePath(path));
 }
 
+function projectId(title: string) {
+  return `project-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+}
+
 export async function login(formData: FormData) {
   const email = text(formData, "email");
   const password = String(formData.get("password") || "");
@@ -49,15 +53,17 @@ export async function saveSettings(formData: FormData) {
     { upsert: true },
   );
   refreshSite();
+  redirect("/admin?tab=company&saved=1");
 }
 
 export async function saveProject(formData: FormData) {
   await requireAdmin();
   await seedProjects();
-  const id = text(formData, "id") || randomUUID();
+  const title = text(formData, "title");
+  const id = text(formData, "id") || projectId(title) || randomUUID();
   const project = {
     id,
-    title: text(formData, "title"),
+    title,
     category: text(formData, "category"),
     description: text(formData, "description"),
     tech: text(formData, "tech").split(",").map((item) => item.trim()).filter(Boolean),
@@ -68,6 +74,7 @@ export async function saveProject(formData: FormData) {
   }
   await (await getDatabase()).collection<{ id: string; [key: string]: unknown }>("projects").updateOne({ id }, { $set: project }, { upsert: true });
   refreshSite();
+  redirect("/admin?tab=projects&saved=1");
 }
 
 export async function deleteProject(formData: FormData) {
@@ -75,4 +82,5 @@ export async function deleteProject(formData: FormData) {
   await seedProjects();
   await (await getDatabase()).collection<{ id: string }>("projects").deleteOne({ id: text(formData, "id") });
   refreshSite();
+  redirect("/admin?tab=projects&deleted=1");
 }

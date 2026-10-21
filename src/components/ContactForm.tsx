@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Send, CheckCircle2, LoaderCircle } from "lucide-react";
 
-type Status = "idle" | "sending" | "sent";
+type Status = "idle" | "sending" | "sent" | "error";
 
 const inputCls =
   "w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted/60 outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/30";
@@ -16,11 +16,20 @@ export default function ContactForm() {
     if (status === "sending") return;
     setStatus("sending");
 
-    // TODO: replace with a real API route / email service (e.g. Resend, Formspree)
-    await new Promise((r) => setTimeout(r, 1200));
-
-    setStatus("sent");
-    (e.target as HTMLFormElement).reset();
+    const form = e.currentTarget;
+    const data = Object.fromEntries(new FormData(form));
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Unable to submit message");
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "sent") {
@@ -116,6 +125,12 @@ export default function ContactForm() {
           className={`${inputCls} resize-y`}
         />
       </div>
+
+      {status === "error" && (
+        <p className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">
+          Your message could not be sent. Please try again.
+        </p>
+      )}
 
       <button
         type="submit"

@@ -7,6 +7,16 @@ export type SiteSettings = typeof defaultSite & {
   workingHours: string;
 };
 
+export type ContactSubmission = {
+  id: string;
+  name: string;
+  email: string;
+  company: string;
+  budget: string;
+  message: string;
+  createdAt: Date;
+};
+
 export const defaultSettings: SiteSettings = {
   ...defaultSite,
   workingHours: "Mon – Fri, 9:00 AM – 6:00 PM",
@@ -48,6 +58,18 @@ export async function getProjects(): Promise<Project[]> {
 
 export async function getDatabase() {
   return database();
+}
+
+export async function getContactSubmissions(): Promise<ContactSubmission[]> {
+  const submissions = await (await database())
+    .collection<Omit<ContactSubmission, "id">>("contact_submissions")
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
+  return submissions.map(({ _id, ...submission }) => ({
+    ...submission,
+    id: _id.toString(),
+  }));
 }
 
 export async function seedProjects() {
